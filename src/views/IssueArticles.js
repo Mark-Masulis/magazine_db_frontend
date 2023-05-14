@@ -7,6 +7,7 @@ export default function IssueArticles({username, password}){
     const [articles, setArticles] = useState()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState()
+    const [insertValues, setInsertValues] = useState({})
 
     const columns = [['WRITER_ID', ColumnDataTypes.INT], ['ARTICLE_TITLE', ColumnDataTypes.VARCHAR], ['ISSUE_NUMBER', ColumnDataTypes.INT], ['SERIES_NAME', ColumnDataTypes.VARCHAR], ['PUBLISHER_NAME', ColumnDataTypes.VARCHAR]]
 
@@ -35,6 +36,35 @@ export default function IssueArticles({username, password}){
         })
     }, [])
 
+    const insertRow = () => {
+        fetch(process.env.REACT_APP_API + '/article', {
+            method: 'POST',
+            headers: {
+                "content-type" : "application/json"
+            },
+            body: JSON.stringify({
+                writer_id: insertValues.WRITER_ID,
+                article_title: insertValues.ARTICLE_TITLE,
+                issue_number: searchParams.get('issue_number'),
+                series_name: searchParams.get('series'),
+                publisher_name: searchParams.get('publisher'),
+                user: username,
+                password: password
+            })
+        }).then(
+            (response) => {
+                if(response.status == 200){
+                    window.location.reload()
+                }else{
+                    alert("Error inserting.")
+                }
+            }
+        ).catch(
+            (error) => {
+                alert(error)
+            }
+        )
+    }
 
     return(
         <div>
@@ -57,6 +87,14 @@ export default function IssueArticles({username, password}){
                                                         </a>
                                                     </td>
                                                 )
+                                            }else if(col[0] == 'ARTICLE_TITLE'){
+                                                return(
+                                                    <td style={{border: '1px solid black', padding: '5px'}}>
+                                                        <a href={`/article?writer_id=${item.WRITER_ID}&article_title=${item.ARTICLE_TITLE}`}>
+                                                            {item[col[0]]}
+                                                        </a>
+                                                    </td>
+                                                )
                                             }else{
                                                 return(
                                                     <td style={{border: '1px solid black', padding: '5px'}}>{item[col[0]]}</td>
@@ -69,6 +107,69 @@ export default function IssueArticles({username, password}){
                         })}
                     </table>
                 }
+                <div>
+                <h3>New Entry</h3>
+                {columns.map(item => {
+                    if(item[0] == 'PUBLISHER_NAME'){
+                        return(
+                            <div>
+                                <label for={item[0]}>{item[0]}
+                                </label>
+                                <input type='text'
+                                    value={searchParams.get('publisher')}
+                                    disabled={true}
+                                />
+                            </div>)
+                    }else if(item[0] == 'SERIES_NAME'){
+                        return(
+                            <div>
+                                <label for={item[0]}>{item[0]}
+                                </label>
+                                <input type='text'
+                                    value={searchParams.get('series')}
+                                    disabled={true}
+                                />
+                            </div>)
+                    }else if(item[0] == 'ISSUE_NUMBER'){
+                        return(
+                            <div>
+                                <label for={item[0]}>{item[0]}
+                                </label>
+                                <input type='text'
+                                    value={searchParams.get('issue_number')}
+                                    disabled={true}
+                                />
+                            </div>)
+                    }else{
+                        return(
+                        <div>
+                            <label for={item[0]}>{item[0]}
+                            </label>
+                            <input type={(()=>{
+                                    switch(item[1]){
+                                        case ColumnDataTypes.INT:
+                                            return 'number'
+                                        case ColumnDataTypes.VARCHAR:
+                                            return 'text'
+                                        case ColumnDataTypes.DATE:
+                                            return 'date'
+                                    }
+                                })()}
+                                onChange={(event) =>  {
+                                    var newInsertValues = insertValues
+                                    newInsertValues[item[0]] = event.target.value
+                                    setInsertValues(newInsertValues)
+                                }}
+                            />
+                        </div>)
+                    }
+                })}
+                <button
+                    onClick={insertRow}
+                >
+                    Insert Row
+                </button>
+            </div>
         </div>
     )
 }

@@ -7,6 +7,7 @@ export default function MagazineIssues({username, password}){
     const [issues, setIssues] = useState()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState()
+    const [insertValues, setInsertValues] = useState({})
 
     const columns = [['ISSUE_NUMBER', ColumnDataTypes.INT], ['SERIES_NAME', ColumnDataTypes.VARCHAR], ['PUBLISHER_NAME', ColumnDataTypes.VARCHAR], ['CURRENT_TOTALS', ColumnDataTypes.INT], ['QUANTITIES_ORDERED', ColumnDataTypes.INT], ['IDEAL_AMOUNT', ColumnDataTypes.INT], ['AMOUNT_SHIPPING', ColumnDataTypes.INT], ['PUBLISH_DATE', ColumnDataTypes.DATE]]
 
@@ -34,6 +35,38 @@ export default function MagazineIssues({username, password}){
         })
     }, [])
 
+    const insertRow = () => {
+        fetch(process.env.REACT_APP_API + '/magazine_issue', {
+            method: 'POST',
+            headers: {
+                "content-type" : "application/json"
+            },
+            body: JSON.stringify({
+                issue_number: insertValues.ISSUE_NUMBER,
+                publisher_name: searchParams.get('publisher'),
+                series_name: searchParams.get('series'),
+                current_totals: insertValues.CURRENT_TOTALS,
+                quantities_ordered: insertValues.QUANTITIES_ORDERED,
+                ideal_amount: insertValues.IDEAL_AMOUNT,
+                amount_shipping: insertValues.AMOUNT_SHIPPING,
+                publish_date: insertValues.PUBLISH_DATE,
+                user: username,
+                password: password
+            })
+        }).then(
+            (response) => {
+                if(response.status == 200){
+                    window.location.reload()
+                }else{
+                    alert("Error inserting.")
+                }
+            }
+        ).catch(
+            (error) => {
+                alert(error)
+            }
+        )
+    }
 
     return(
         <div>
@@ -68,6 +101,59 @@ export default function MagazineIssues({username, password}){
                         })}
                     </table>
                 }
+                <div>
+                <h3>New Entry</h3>
+                {columns.map(item => {
+                    if(item[0] == 'PUBLISHER_NAME'){
+                        return(
+                            <div>
+                                <label for={item[0]}>{item[0]}
+                                </label>
+                                <input type='text'
+                                    value={searchParams.get('publisher')}
+                                    disabled={true}
+                                />
+                            </div>)
+                    }else if(item[0] == 'SERIES_NAME'){
+                        return(
+                            <div>
+                                <label for={item[0]}>{item[0]}
+                                </label>
+                                <input type='text'
+                                    value={searchParams.get('series')}
+                                    disabled={true}
+                                />
+                            </div>)
+                    }else{
+                        return(
+                        <div>
+                            <label for={item[0]}>{item[0]}
+                            </label>
+                            <input type={(()=>{
+                                    switch(item[1]){
+                                        case ColumnDataTypes.INT:
+                                            return 'number'
+                                        case ColumnDataTypes.VARCHAR:
+                                            return 'text'
+                                        case ColumnDataTypes.DATE:
+                                            return 'date'
+                                    }
+                                })()}
+                                onChange={(event) =>  {
+                                    var newInsertValues = insertValues
+                                    newInsertValues[item[0]] = event.target.value
+                                    setInsertValues(newInsertValues)
+                                }}
+                            />
+                        </div>)
+                    }
+                })}
+                <button
+                    onClick={insertRow}
+                >
+                    Insert Row
+                </button>
+            </div>
         </div>
     )
 }

@@ -7,6 +7,7 @@ export default function Series({username, password}){
     const [series, setSeries] = useState()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState()
+    const [insertValues, setInsertValues] = useState({})
 
     const columns = [['SERIES_NAME', ColumnDataTypes.VARCHAR], ['PUBLISHER_NAME', ColumnDataTypes.VARCHAR], ['PUBLICATION_FREQUENCY', ColumnDataTypes.INT], ['COST_PER_BILLING_CYCLE', ColumnDataTypes.INT]]
 
@@ -33,6 +34,34 @@ export default function Series({username, password}){
         })
     }, [])
 
+    const insertRow = () => {
+        fetch(process.env.REACT_APP_API + '/series', {
+            method: 'POST',
+            headers: {
+                "content-type" : "application/json"
+            },
+            body: JSON.stringify({
+                publisher_name: searchParams.get('publisher'),
+                series_name: insertValues.SERIES_NAME,
+                publication_frequency: insertValues.PUBLICATION_FREQUENCY,
+                cost: insertValues.COST_PER_BILLING_CYCLE,
+                user: username,
+                password: password
+            })
+        }).then(
+            (response) => {
+                if(response.status == 200){
+                    window.location.reload()
+                }else{
+                    alert("Error inserting.")
+                }
+            }
+        ).catch(
+            (error) => {
+                alert(error)
+            }
+        )
+    }
 
     return(
         <div>
@@ -67,6 +96,54 @@ export default function Series({username, password}){
                         })}
                     </table>
                 }
+                <div>
+                <h3>New Entry</h3>
+                {columns.map(item => {
+                    if(item[0] == 'PUBLISHER_NAME'){
+                        return(
+                            <div>
+                                <label for={item[0]}>{item[0]}
+                                </label>
+                                <input type={(()=>{
+                                        switch(item[1]){
+                                            case ColumnDataTypes.INT:
+                                                return 'number'
+                                            case ColumnDataTypes.VARCHAR:
+                                                return 'text'
+                                        }
+                                    })()}
+                                    value={searchParams.get('publisher')}
+                                    disabled={true}
+                                />
+                            </div>)
+                    }else{
+                        return(
+                        <div>
+                            <label for={item[0]}>{item[0]}
+                            </label>
+                            <input type={(()=>{
+                                    switch(item[1]){
+                                        case ColumnDataTypes.INT:
+                                            return 'number'
+                                        case ColumnDataTypes.VARCHAR:
+                                            return 'text'
+                                    }
+                                })()}
+                                onChange={(event) =>  {
+                                    var newInsertValues = insertValues
+                                    newInsertValues[item[0]] = event.target.value
+                                    setInsertValues(newInsertValues)
+                                }}
+                            />
+                        </div>)
+                    }
+                })}
+                <button
+                    onClick={insertRow}
+                >
+                    Insert Row
+                </button>
+            </div>
         </div>
     )
 }

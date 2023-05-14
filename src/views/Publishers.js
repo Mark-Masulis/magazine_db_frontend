@@ -5,6 +5,7 @@ export default function Publishers({username, password}){
     const [publishers, setPublishers] = useState()
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState()
+    const [insertValues, setInsertValues] = useState({})
 
     const columns = [['PUBLISHER_NAME', ColumnDataTypes.VARCHAR], ['MAILING_ADDRESS', ColumnDataTypes.VARCHAR], ['PHONE_NUMBER', ColumnDataTypes.VARCHAR], ['EMAIL', ColumnDataTypes.VARCHAR]]
 
@@ -29,6 +30,35 @@ export default function Publishers({username, password}){
             alert(error)
         })
     }, [])
+
+    const insertRow = () => {
+        fetch(process.env.REACT_APP_API + '/publisher', {
+            method: 'POST',
+            headers: {
+                "content-type" : "application/json"
+            },
+            body: JSON.stringify({
+                publisher_name: insertValues.PUBLISHER_NAME,
+                address: insertValues.MAILING_ADDRESS,
+                phone: insertValues.PHONE_NUMBER,
+                email: insertValues.EMAIL,
+                user: username,
+                password: password
+            })
+        }).then(
+            (response) => {
+                if(response.status == 200){
+                    window.location.reload()
+                }else{
+                    alert("Error inserting.")
+                }
+            }
+        ).catch(
+            (error) => {
+                alert(error)
+            }
+        )
+    }
 
     return(
         <div>
@@ -63,6 +93,32 @@ export default function Publishers({username, password}){
                         })}
                     </table>
             }
+            <div>
+                <h3>New Entry</h3>
+                {columns.map(item => <div>
+                        <label for={item[0]}>{item[0]}
+                        </label>
+                        <input type={(()=>{
+                                switch(item[1]){
+                                    case ColumnDataTypes.INT:
+                                        return 'number'
+                                    case ColumnDataTypes.VARCHAR:
+                                        return 'text'
+                                }
+                            })()}
+                            onChange={(event) =>  {
+                                var newInsertValues = insertValues
+                                newInsertValues[item[0]] = event.target.value
+                                setInsertValues(newInsertValues)
+                            }}
+                        />
+                    </div>)}
+                <button
+                    onClick={insertRow}
+                >
+                    Insert Row
+                </button>
+            </div>
         </div>
     )
 }

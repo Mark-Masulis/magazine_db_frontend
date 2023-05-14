@@ -13,6 +13,7 @@ import IssueArticles from './views/IssueArticles';
 import WriterArticles from './views/WriterArticles';
 import Customers from './views/Customers';
 import CustomerSubscriptions from './views/CustomerSubscriptions'
+import Article from './views/Article';
 
 function App() {
 
@@ -23,6 +24,7 @@ function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route>
+        <Route path="/" element={<div></div>}/>
         <Route path="/publishers" element={<Publishers username={'root'} password={'abc123'}/>}/>
         <Route path="/series" element={<Series username={'root'} password={'abc123'}/>}/>
         <Route path="/magazine_issues" element={<MagazineIssues username={'root'} password={'abc123'}/>}/>
@@ -30,6 +32,7 @@ function App() {
         <Route path="/writer_articles" element={<WriterArticles username={'root'} password={'abc123'}/>}/>
         <Route path="/customers" element={<Customers username={'root'} password={'abc123'}/>}/>
         <Route path="/subscriptions" element={<CustomerSubscriptions username={'root'} password={'abc123'}/>}/>
+        <Route path="/article" element={<Article username={'root'} password={'abc123'}/>}/>
       </Route>
       
     )
